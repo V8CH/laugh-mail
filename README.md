@@ -6,6 +6,8 @@ The default ("/") route shows a basic browser view (HTML-only) describing the se
 
 The API route ("/api/jokes") returns a JSON list of jokes drawn from [wocka.com](http://http://wocka.com/) via scraped datasets I found in the [taivop/joke-dataset](https://github.com/taivop/joke-dataset) repository on GitHub. Optionally, send a "count" query param to retrieve a limited set of jokes (e.g., "/api/jokes?count=5"). The total count of jokes available at present is 75, so queries for a count > 75 will only return the complete (75 joke) dataset.
 
+Requests to an unavailable route results in a basic 404 browser response.
+
 #### Note on Jokes
 
 Though I took some time to groom the jokes dataset, many remain that are inappropriate or, at a minimum, insensitive. Please realize that inclusion of these jokes does not constitute endorsement!
