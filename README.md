@@ -8,7 +8,7 @@ The API route ("/api/jokes") returns a JSON list of jokes drawn from [wocka.com]
 
 #### Note on Jokes
 
-Though I took some time to groom the jokes dataset, many remain that are inappropriate or, at a minimum, insensitive. Please realize that inclusion of these jokes here do not constitute any kind of endorsement!
+Though I took some time to groom the jokes dataset, many remain that are inappropriate or, at a minimum, insensitive. Please realize that inclusion of these jokes does not constitute endorsement!
 
 ## License
 
