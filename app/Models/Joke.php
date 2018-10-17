@@ -40,6 +40,9 @@ class Joke
      */
     public function get()
     {
+        if ($this->limit === 0) {
+            return [];
+        }
         if ($this->limit > 0 && $this->limit <= 75) {
             return $this->getWithLimit();
         }
@@ -75,6 +78,12 @@ class Joke
         $data =Joke::getDataSource();
         
         $indexes = array_rand($data, $this->limit);
+    
+        // array_rand() returns an integer by default (and if limit = 1) and an array otherwise.
+        //   So, build an array if $index is an integer.
+        if (is_int($indexes)) {
+            $indexes = [$indexes];
+        }
         return array_map(function ($index) use ($data) {
             return $data[$index];
         }, $indexes);
