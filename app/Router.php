@@ -31,8 +31,8 @@ class Router
     }
     
     /**
-     * Where all the magic happens: Looks up the requested route and calls
-     * the correct controller method or sends a not-found response
+     * Where all the magic happens: Looks up the requested route and sends
+     *   a not-found response or calls the correct controller method
      *
      * @var \V8CH\LaughMail\Request
      */
@@ -53,7 +53,6 @@ class Router
         // Create controller and call required method
         $controller = new $route->controllerClass;
         $controller->{$route->method}($request);
-        exit(0);
     }
 
     protected function add($verb, $uri, $controllerClass, $method)
