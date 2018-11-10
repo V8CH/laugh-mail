@@ -2,32 +2,20 @@
 
 namespace V8CH\LaughMail;
 
-use \BadMethodCallException;
+use \V8CH\LaughMail\Controllers\ErrorController;
 
 class Router
 {
 
     /**
-     * Allowed HTTP verbs (methods)
+     * Configured routes
      *
      * @var array
      */
-    protected $supportedHttpVerbs = array("GET");
+    protected $routes = [];
 
     /**
-     * Current Request
-     *
-     * @var \V8CH\LaughMail\Request
-     */
-    protected $request;
-
-    public function __construct($request)
-    {
-        $this->request = $request;
-    }
-
-    /**
-     * Magic method to build our routes
+     * Build our routes
      *
      * @param string $httpVerb String name of the route verb to build
      * @param array $args Array of string arguments to the called method, including
@@ -35,52 +23,41 @@ class Router
      */
     public function __call($httpVerb, $args)
     {
-        list($route, $controllerClass, $method) = $args;
+        list($uri, $controllerClass, $method) = $args;
+        $httpVerb = strtoupper($httpVerb);
 
-        // Verify function is for a supported HTTP verb (method)
-        if (!in_array(strtoupper($httpVerb), $this->supportedHttpVerbs)) {
-            $unsupported = strtoupper($httpVerb);
-            throw new BadMethodCallException("Unsupported HTTP Method: {$unsupported}");
-        }
-
-        // Map the route config as an array into an instance property by HTTP verb (method); key
-        // is the route (uri) and the config is a string array with controller class name and method
-        $this->{$httpVerb}[$route] = [$controllerClass, $method];
+        // Add to routes array
+        $this->add($httpVerb, $uri, $controllerClass, $method);
     }
     
     /**
-     * Where all the magic happens: Looks up the requested route and calls
-     * the correct controller method or sends a not-found response
+     * Where all the magic happens: Looks up the requested route and sends
+     *   a not-found response or calls the correct controller method
      *
      * @var \V8CH\LaughMail\Request
      */
-    public function resolve()
+    public function resolve(Request $request)
     {
-        // Get all routes mapped to our current HTTP verb (method)
-        $methods = property_exists($this, strtolower($this->request->verb)) ? $this->{strtolower($this->request->verb)} : null;
+        // Get all routes mapped to our current HTTP method (verb)
+        $routesForVerb = $this->routes[$request->verb];
 
-        if (empty($methods) || !array_key_exists($this->request->uri, $methods)) {
-            return $this->handleNotFound();
+        // Verify requsted URI
+        if (!isset($routesForVerb[$request->uri])) {
+            $controller = new ErrorController();
+            $controller->handle("404");
         }
 
-        // Lookup the current request URI in all route configs for current HTTP verb (method)
-        $routeConfig = $methods[$this->request->uri];
+        // Lookup the current request URI in all route configs for current HTTP method (verb)
+        $route = $routesForVerb[$request->uri];
 
-        // Extract required controller classname and method then call it
-        list($controllerClass, $method) = $routeConfig;
-        $controller = new $controllerClass;
-        $controller->$method($this->request);
+        // Create controller and call required method
+        $controller = new $route->controllerClass;
+        $controller->{$route->method}($request);
     }
-    
-    /**
-     * Sends a not-found response
-     *
-     * @var \V8CH\LaughMail\Request
-     */
-    protected function handleNotFound()
+
+    protected function add($verb, $uri, $controllerClass, $method)
     {
-        http_response_code(404);
-        include dirname(__FILE__) . "/../resources/views/404.php";
-        exit(0);
+        $route = new Route($verb, $uri, $controllerClass, $method);
+        $this->routes[$route->verb][$route->uri] = $route;
     }
 }
